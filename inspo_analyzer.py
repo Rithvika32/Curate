@@ -1,94 +1,62 @@
 import os
-from google import genai
-from PIL import Image
+import time
 import json
+import base64
+import requests
 from dotenv import load_dotenv
 
-
-def parse_gemini_response(response):
-    try:
-        text = response["candidates"][0]["content"]["parts"][0]["text"]
-        return json.loads(text)
-    except:
-        print("Raw response:", response)
-        return None
-    
 # -----------------------------
-# Gemini Setup
+# Setup
 # -----------------------------
-
 load_dotenv()
 API_KEY = os.environ["GEMINI_API_KEY"]
 
-client = genai.Client(api_key=API_KEY)
+url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 
-# -----------------------------
-# Load Inspiration Image
-# -----------------------------
-
-image_path = input("Enter image filename: ")
-
-image = Image.open(image_path)
-
-# -----------------------------
-# Prompt
-# -----------------------------
-
-prompt = """
-You are a photography coaching system.
-
-Analyze this image and return ONLY valid JSON.
-
-No explanations. No markdown. No extra text.
-
-Return ONLY valid JSON.
-
-{
-  "objects": [],
-  "lighting": "",
-  "mood": "",
-  "composition": "",
-  "colors": []
+headers = {
+    "Content-Type": "application/json",
+    "X-goog-api-key": API_KEY
 }
 
-Focus on details useful for recreating the image.
-Do not include explanations.
-Do not use markdown.
-Return JSON only.
-"""
+# -----------------------------
+# Helpers
+# -----------------------------
+def encode_image(path):
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode("utf-8")
+
+
+def parse_gemini_response(response_json):
+    try:
+        text = response_json["candidates"][0]["content"]["parts"][0]["text"]
+        return json.loads(text)
+    except Exception as e:
+        print("Failed to parse JSON. Raw output:")
+        print(response_json)
+        return None
+
+
+def call_gemini(payload, retries=5):
+    for i in range(retries):
+        response = requests.post(url, headers=headers, json=payload)
+
+        if response.status_code == 200:
+            return response.json()
+
+        print(f"Gemini attempt {i+1} failed:", response.status_code)
+
+        if response.status_code == 503:
+            time.sleep(2 ** i)
+        else:
+            print(response.text)
+            return response.json()
+
+    return {"error": "Gemini failed after retries"}
+
 
 # -----------------------------
-# Gemini Request
+# Core Function
 # -----------------------------
-
-response = client.models.generate_content(
-    model="gemini-2.5-flash",
-    contents=[
-        prompt,
-        image
-    ]
-)
-
-# -----------------------------
-# Output
-# -----------------------------
-
-print("\nGemini Output:")
-print(response.text)
-
-# Optional: Try parsing as JSON
-try:
-    scene_data = json.loads(response.text)
-
-    print("\nParsed Successfully!")
-
-    print(json.dumps(scene_data, indent=2))
-
-except Exception as e:
-    print("\nCould not parse JSON:")
-    print(e)
-
-
 def analyze_inspo(image_path):
     image_base64 = encode_image(image_path)
 
@@ -98,10 +66,13 @@ def analyze_inspo(image_path):
                 "parts": [
                     {
                         "text": """
-You are a photography coach AI.
+You are a photography coaching AI.
 
-Analyze this image and return ONLY valid JSON:
+Analyze this image and return ONLY valid JSON.
 
+No explanation. No markdown. No extra text.
+
+Return format:
 {
   "mood": "",
   "lighting": "",
@@ -111,8 +82,6 @@ Analyze this image and return ONLY valid JSON:
   "style_tags": [],
   "camera_suggestions": []
 }
-
-Be specific and practical for recreating the photo.
 """
                     },
                     {
@@ -129,5 +98,14 @@ Be specific and practical for recreating the photo.
     response = call_gemini(payload)
     return parse_gemini_response(response)
 
-result = analyze_inspo("inspo.jpg")
-print(result)
+
+# -----------------------------
+# Run Test
+# -----------------------------
+if __name__ == "__main__":
+    image_path = input("Enter image filename: ")
+
+    result = analyze_inspo(image_path)
+
+    print("\nGemini Output:\n")
+    print(json.dumps(result, indent=2))

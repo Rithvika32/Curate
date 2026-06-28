@@ -1,0 +1,136 @@
+/* ============================================================
+   Curate — global theme
+   Summer / spring vibes: yellow + green + pink
+   ============================================================ */
+
+:root {
+  /* core palette (from the brand sheet) */
+  --yellow: #fce08b;
+  --pink: #efb7ce;
+  --green: #d6de96;
+
+  /* derived shades for depth + contrast */
+  --yellow-soft: #fef3c8;
+  --green-soft: #eef2d2;
+  --green-deep: #8a9a4a;
+  --green-ink: #5c6b2e;
+  --pink-deep: #d77ba4;
+  --pink-ink: #a84d77;
+
+  --ink: #4a4633;          /* warm near-black text */
+  --ink-soft: #7c7860;
+  --paper: #fffdf4;        /* off-white panels */
+  --line: rgba(92, 107, 46, 0.18);
+
+  --shadow-sm: 0 4px 14px rgba(124, 120, 60, 0.14);
+  --shadow-md: 0 14px 34px rgba(124, 120, 60, 0.18);
+  --shadow-lg: 0 26px 60px rgba(124, 120, 60, 0.22);
+
+  --radius: 22px;
+  --radius-sm: 14px;
+  --radius-pill: 999px;
+
+  /* fonts */
+  --pixel: 'Pixelify Sans', system-ui, sans-serif;  /* the "URATE" pixel look */
+  --tech: 'Pixelify Sans', system-ui, sans-serif;   /* alias kept for studio */
+  --script: 'Allura', cursive;                       /* the flowing accent */
+  --sans: 'Poppins', system-ui, 'Segoe UI', sans-serif;
+
+  color-scheme: light;
+  color: var(--ink);
+  font: 400 17px/1.55 var(--sans);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  color: var(--ink);
+  /* light green diagonal stripes wash across the whole app */
+  background-color: var(--green-soft);
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(214, 222, 150, 0.55) 0px,
+    rgba(214, 222, 150, 0.55) 22px,
+    rgba(238, 242, 210, 0.85) 22px,
+    rgba(238, 242, 210, 0.85) 44px
+  );
+  background-attachment: fixed;
+}
+
+#root {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1,
+h2,
+h3 {
+  color: var(--ink);
+  line-height: 1.05;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--pink-ink);
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+:focus-visible {
+  outline: 3px solid var(--pink-deep);
+  outline-offset: 2px;
+}
+
+/* reusable display lockup: script cap + pixel body, like the mockup */
+.wordmark {
+  font-family: var(--pixel);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.02em;
+}
+.wordmark .cap {
+  font-family: var(--script);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 1.45em;
+  line-height: 0.8;
+  margin-right: 0.04em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
